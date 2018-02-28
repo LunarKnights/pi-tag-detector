@@ -10,7 +10,9 @@ namespace pitag_ros {
 class PitagNodelet: public nodelet::Nodelet
 {
 public:
+  PitagNodelet();
   void onInit() override;
+protected:
 };
 
 }
