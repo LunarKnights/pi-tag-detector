@@ -1,0 +1,8 @@
+<library path="lib/libsample_nodelet">
+	<class name="pitag_ros/PitagNodelet" type="pitag_ros::PitagNodelet"
+		base_class_type="nodelet::Nodelet">
+		<description>
+			PiTAG fiducial estimation nodelet
+		</description>
+	</class>
+  </library>
