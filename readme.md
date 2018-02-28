@@ -1,6 +1,9 @@
 Pi-Tag Detector
 ===============
 
+We're working on re-ROS-ifying this package because `cob_fiducials` is pretty
+messy to build due to its rather complicated web of dependencies.
+
 This is a fork of the Pi-Tag fiducial marker detector in the
 [`cob_fiducials`](http://wiki.ros.org/cob_fiducials) [ROS](http://www.ros.org/)
 module, modified to not require ROS. Other modifications include a separate
