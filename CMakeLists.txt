@@ -11,6 +11,9 @@ find_package(TinyXML REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   nodelet
+  image_transport
+  sensor_msgs
+  cv_bridge
 )
 
 catkin_package(
