@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   sensor_msgs
   cv_bridge
+  tf2
+  tf2_geometry_msgs
 )
 
 catkin_package(

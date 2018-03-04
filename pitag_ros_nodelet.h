@@ -4,12 +4,12 @@
 #include "ros/ros.h"
 
 #include <memory>
+#include <string>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 #include <nodelet/nodelet.h>
-// TODO: add to dependencies
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/image_encodings.h>
@@ -32,8 +32,13 @@ protected:
   std::shared_ptr<image_transport::ImageTransport> it;
   ros::Subscriber camInfoSub;
   image_transport::Subscriber imageSub;
+  image_transport::Publisher debugPub;
+  ros::Publisher posePub;
+
+  std::string cameraFrame;
 
   bool cameraInfoSet;
+  bool publishDebugFrame;
 };
 
 }
