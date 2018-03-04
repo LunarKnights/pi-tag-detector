@@ -1,4 +1,4 @@
-<library path="lib/libsample_nodelet">
+<library path="lib/libpitag_ros_nodelet">
 	<class name="pitag_ros/PitagNodelet" type="pitag_ros::PitagNodelet"
 		base_class_type="nodelet::Nodelet">
 		<description>
