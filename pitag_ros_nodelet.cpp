@@ -18,8 +18,6 @@
 
 #include "pitag_ros_nodelet.h"
 
-PLUGINLIB_EXPORT_CLASS(pitag_ros::PitagNodelet, nodelet::Nodelet)
-
 namespace pitag_ros {
 
 PitagNodelet::PitagNodelet():
@@ -32,10 +30,15 @@ PitagNodelet::PitagNodelet():
 void PitagNodelet::onInit()
 {
   auto nhPrivate = getPrivateNodeHandle();
+
+  std::string cameraTopicName, cameraInfoTopicName;
+  nhPrivate.param<std::string>("camera_topic", cameraTopicName, "camera");
+  nhPrivate.param<std::string>("camera_info_topic", cameraInfoTopicName, "camera_info");
+
   it = std::shared_ptr<image_transport::ImageTransport>(
       new image_transport::ImageTransport(nhPrivate));
-  imageSub = it->subscribe("camera", 1, &PitagNodelet::imageCb, this);
-  camInfoSub = nhPrivate.subscribe("camera_info", 1, &PitagNodelet::cameraInfoCb, this);
+  imageSub = it->subscribe(cameraTopicName, 1, &PitagNodelet::imageCb, this);
+  camInfoSub = nhPrivate.subscribe(cameraInfoTopicName, 1, &PitagNodelet::cameraInfoCb, this);
   posePub = nhPrivate.advertise<fiducial_msgs::FiducialTransformArray>("fiducials", 1);
 
   // store an empty matrix for now
@@ -68,10 +71,10 @@ void PitagNodelet::cameraInfoCb(const sensor_msgs::CameraInfo::ConstPtr& msg)
   }
 
   auto &toCopy = msg->K;
-  std::array<float, toCopy.static_size> copiedMatrix;
+  std::array<double, toCopy.static_size> copiedMatrix;
   std::copy(toCopy.begin(), toCopy.end(), copiedMatrix.begin());
 
-  cv::Mat cameraMatrix = cv::Mat(3, 3, CV_32F, copiedMatrix.data());
+  cv::Mat cameraMatrix = cv::Mat(3, 3, CV_64F, copiedMatrix.data());
   tagDetector->SetCameraMatrix(cameraMatrix);
 
   cameraFrame = msg->header.frame_id;
@@ -179,5 +182,6 @@ void PitagNodelet::imageCb(const sensor_msgs::ImageConstPtr &msg)
   }
 }
 
-
 }
+
+PLUGINLIB_EXPORT_CLASS(pitag_ros::PitagNodelet, nodelet::Nodelet);
