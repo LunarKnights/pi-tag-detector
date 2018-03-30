@@ -97,59 +97,56 @@ void PitagNodelet::imageCb(const sensor_msgs::ImageConstPtr &msg)
       // silently fail; GetPose fails if no fiducials are visible, which will happen a lot
       return;
     }
-    if (poses.size() > 0)
+    // publish poses
+    fiducial_msgs::FiducialTransformArray fta;
+    fta.header.stamp = msg->header.stamp;
+    fta.header.frame_id = cameraFrame;
+    fta.image_seq = msg->header.seq;
+    for (const auto &pose: poses)
     {
-      // publish poses
-      fiducial_msgs::FiducialTransformArray fta;
-      fta.header.stamp = msg->header.stamp;
-      fta.header.frame_id = cameraFrame;
-      fta.image_seq = msg->header.seq;
-      for (const auto &pose: poses)
+      fiducial_msgs::FiducialTransform ft;
+      ft.fiducial_id = pose.id;
+      tf2::Matrix3x3 rotation;
+
+      // assumptions about pose structure; pose.rot is a 3x3 matrix,
+      // pose.trans is a 3x1 vector
+      if (pose.rot.rows != 3 || pose.rot.cols != 3)
       {
-        fiducial_msgs::FiducialTransform ft;
-        ft.fiducial_id = pose.id;
-        tf2::Matrix3x3 rotation;
-
-        // assumptions about pose structure; pose.rot is a 3x3 matrix,
-        // pose.trans is a 3x1 vector
-        if (pose.rot.rows != 3 || pose.rot.cols != 3)
-        {
-          ROS_FATAL("pitag pose rotation is invalid size!");
-          return;
-        }
-        if (pose.trans.rows != 3 || pose.trans.cols != 1)
-        {
-          ROS_FATAL("pitag pose translation is invalid size!");
-          return;
-        }
-
-        for (int i = 0; i < 3; ++i)
-        {
-          for (int j = 0; j < 3; ++j)
-          {
-            rotation[i][j] = pose.rot.at<double>(i, j);
-          }
-        }
-
-        const tf2::Vector3 translation(
-            pose.trans.at<double>(0, 0),
-            pose.trans.at<double>(0, 1),
-            pose.trans.at<double>(0, 2));
-        tf2::Quaternion quatRotation;
-        rotation.getRotation(quatRotation);
-
-        const tf2::Transform transform = tf2::Transform(quatRotation, translation);
-        ft.transform = tf2::toMsg(transform);
-
-        // NOTE: these aren't provided by the library, maybe it'll be worth
-        // trying to add them eventually
-        ft.image_error = 0.0;
-        ft.object_error = 0.0;
-        ft.fiducial_area = 0.0;
-        fta.transforms.push_back(ft);
+        ROS_FATAL("pitag pose rotation is invalid size!");
+        return;
       }
-      posePub.publish(fta);
+      if (pose.trans.rows != 3 || pose.trans.cols != 1)
+      {
+        ROS_FATAL("pitag pose translation is invalid size!");
+        return;
+      }
+
+      for (int i = 0; i < 3; ++i)
+      {
+        for (int j = 0; j < 3; ++j)
+        {
+          rotation[i][j] = pose.rot.at<double>(i, j);
+        }
+      }
+
+      const tf2::Vector3 translation(
+          pose.trans.at<double>(0, 0),
+          pose.trans.at<double>(0, 1),
+          pose.trans.at<double>(0, 2));
+      tf2::Quaternion quatRotation;
+      rotation.getRotation(quatRotation);
+
+      const tf2::Transform transform = tf2::Transform(quatRotation, translation);
+      ft.transform = tf2::toMsg(transform);
+
+      // NOTE: these aren't provided by the library, maybe it'll be worth
+      // trying to add them eventually
+      ft.image_error = 0.0;
+      ft.object_error = 0.0;
+      ft.fiducial_area = 0.0;
+      fta.transforms.push_back(ft);
     }
+    posePub.publish(fta);
 
     if (publishDebugFrame && poses.size() > 0 & posePub.getNumSubscribers() > 0)
     {
